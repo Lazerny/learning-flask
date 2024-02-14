@@ -1,0 +1,24 @@
+h1 {
+   color: #d22e3a;
+   align-text:center;
+}
+form.login_form {
+    max-width: 450px;
+    background-color: #ffcc00;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 10px;
+}
+html, body {
+    height: 100%;
+}
+
+html {
+    display: table;
+    margin: auto;
+}
+
+body {
+    display: table-cell;
+    vertical-align: middle;
+}
