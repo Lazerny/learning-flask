@@ -1,0 +1,20 @@
+{% extends "index.html" %}
+
+{% block content %}
+    <h2>Список профессий<h2/>
+    {%if list == 'ol'%}
+    <ol>
+        {%for i in prof%}
+        <li>{{i}} </li>
+        {%endfor%}
+    <ol>
+    {%elif list == 'ul'%}
+    <ul>
+        {%for i in prof%}
+        <li>{{i}} </li>
+        {%endfor%}
+    <ul>
+    {%else%}
+        <h2>ОШИБКА</h2>
+    {%endif%}
+{% endblock %}

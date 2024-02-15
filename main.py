@@ -1,16 +1,32 @@
-from flask import Flask, url_for, request
+from flask import Flask, url_for, request, render_template
 
 app = Flask(__name__)
 
 
 @app.route('/')
-def main():
-    return "<h1>Миссия Колонизация Марса</h1>"
-
-
 @app.route('/index')
 def index():
-    return "<h3>И на Марсе будут яблони цвести!<h3>"
+    user = "Ученик Яндекс.Лицея"
+    return render_template('index.html', title='Домашняя страница',
+                           username=user)
+
+
+@app.route('/answer')
+@app.route('/auto_answer')
+def answer():
+    data = {"title": "Анкета", 'surname': 'Ivanov', 'name': 'Ivan', "education": 'высшее', 'profession': 'Инженер', }
+    return render_template('auto_answer.html', title=data['title'], data=data)
+
+
+@app.route('/training/<prof>')
+def new_prof(prof):
+    return render_template('input.html', prof=prof, title='Тренировки')
+
+
+@app.route('/list_prof/<list>')
+def list_prof(list):
+    prof = ['инженер', 'строитель', 'врач', 'программист', 'биолог', 'химик', "летчик", "физик"]
+    return render_template('prof.html', list=list, prof=prof)
 
 
 @app.route('/promotion')
