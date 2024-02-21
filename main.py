@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, url_for, request, render_template
 
 app = Flask(__name__)
@@ -246,6 +248,11 @@ def choice_your_planet(planet_name):
                     </div>
 """
 
+@app.route('/distribution')
+def distribution():
+    with open('pilots.json', 'rb') as file:
+        pilots = json.load(file)
+    return render_template('distribution.html', pilots=pilots)
 
 @app.route('/results/<nickname>/<int:level>/<float:rating>')
 def result_selection(nickname, level, rating):
