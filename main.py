@@ -248,11 +248,31 @@ def choice_your_planet(planet_name):
                     </div>
 """
 
+
 @app.route('/distribution')
 def distribution():
     with open('pilots.json', 'rb') as file:
         pilots = json.load(file)
     return render_template('distribution.html', pilots=pilots)
+
+
+@app.route('/table/<sex>/<int:age>')
+def table(sex, age):
+    params = {}
+    if sex == 'male':
+        params['color'] = (0 + age, 191 - age, 255 - age)
+        if age < 21:
+            params['image'] = 'yong-alien.jpg'
+        else:
+            params['image'] = 'old-alien.jpg'
+    elif sex == 'female':
+        params['color'] = (255 - age, 192 - age, 203 - age)
+        if age < 21:
+            params['image'] = 'yong-alien.jpg'
+        else:
+            params['image'] = 'old-alien.jpg'
+    return render_template('table.html', params=params)
+
 
 @app.route('/results/<nickname>/<int:level>/<float:rating>')
 def result_selection(nickname, level, rating):

@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+
+{% block content %}
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Цвет стен</th>
+      <th scope="col">Эмблема</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td scope="row">
+        <div class="rectangle" style="width: 500px; height: 700px; background-color: rgb({{ params['color'][0] }}, {{ params['color'][1] }}, {{ params['color'][2] }})"></div>
+      </td>
+      <td><img src="/static/img/{{ params['image'] }}"
+           alt="здесь должна была быть картинка, но не нашлась"></td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
+
+.rectangle {
+    width: 200px;
+    height: 100px;
+}
