@@ -17,3 +17,13 @@ html, body {
     color: #d22e3a;
     padding-left: 10;
 }
+
+table{
+    min-width: 800px;
+}
+tr{
+    min-width: 200px;
+}
+td{
+    min-width: 200px;
+}

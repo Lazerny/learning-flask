@@ -13,7 +13,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 
-@app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -301,59 +300,70 @@ def result_selection(nickname, level, rating):
 """
 
 
+@app.route('/')
+def work():
+    db_sess = db_session.create_session()
+    news = db_sess.query(Jobs).filter(Jobs.is_finished is not True)
+    return render_template("works.html", news=news)
+
+
 if __name__ == '__main__':
-    # app.run(port=8080, host='127.0.0.1')
-    db_session.global_init('db/mars_explorer.db')
-    session = db_session.create_session()
-    user = User()
-    user.surname = "Scott"
-    user.name = "Ridley"
-    user.age = 21
-    user.position = "captain"
-    user.speciality = "research engineer"
-    user.address = "module_1"
-    user.email = "scott_chief@mars.org"
-    user.hashed_password = "cap"
-    session.add(user)
-
-    user = User()
-    user.surname = "Robert"
-    user.name = "Smith"
-    user.age = 24
-    user.position = "no captain"
-    user.speciality = "engineer"
-    user.address = "module_2"
-    user.email = "robert_smith@mars.org"
-    user.hashed_password = "123"
-    session.add(user)
-
-    user = User()
-    user.surname = "Rebecca"
-    user.name = "Smith"
-    user.age = 23
-    user.position = "no captain"
-    user.speciality = "developer"
-    user.address = "module_3"
-    user.email = "rebecca_smith@mars.org"
-    user.hashed_password = "qwe"
-    session.add(user)
-
-    user = User()
-    user.surname = "North"
-    user.name = "Harvat"
-    user.age = 60
-    user.position = "no captain"
-    user.speciality = "developer"
-    user.address = "module_5"
-    user.email = "north_har@mars.org"
-    user.hashed_password = "bfbdg"
-    session.add(user)
-    session.commit()
-
-    job = Jobs()
-    job.team_leader = 1
-    job.job = 'deployment of residential modules 1 and 2'
-    job.work_size = 15
-    job.collaborators = '2, 3'
-    job.is_finished = False
-    session.add(job)
+    # name_db = input()
+    db_session.global_init(f'db/mars_explorer.db')
+    app.run(port=8080, host='127.0.0.1')
+    # session = db_session.create_session()
+    # user = User()
+    # user.surname = "Scott"
+    # user.name = "Ridley"
+    # user.age = 21
+    # user.position = "captain"
+    # user.speciality = "research engineer"
+    # user.address = "module_1"
+    # user.email = "scott_chief@mars.org"
+    # user.hashed_password = "cap"
+    # session.add(user)
+    #
+    # user = User()
+    # user.surname = "Robert"
+    # user.name = "Smith"
+    # user.age = 24
+    # user.position = "no captain"
+    # user.speciality = "engineer"
+    # user.address = "module_2"
+    # user.email = "robert_smith@mars.org"
+    # user.hashed_password = "123"
+    # session.add(user)
+    #
+    # user = User()
+    # user.surname = "Rebecca"
+    # user.name = "Smith"
+    # user.age = 23
+    # user.position = "no captain"
+    # user.speciality = "developer"
+    # user.address = "module_3"
+    # user.email = "rebecca_smith@mars.org"
+    # user.hashed_password = "qwe"
+    # session.add(user)
+    #
+    # user = User()
+    # user.surname = "North"
+    # user.name = "Harvat"
+    # user.age = 60
+    # user.position = "no captain"
+    # user.speciality = "developer"
+    # user.address = "module_5"
+    # user.email = "north_har@mars.org"
+    # user.hashed_password = "bfbdg"
+    # session.add(user)
+    #
+    # job = Jobs()
+    # job.team_leader = 1
+    # job.job = 'deployment of residential modules 1 and 2'
+    # job.work_size = 15
+    # job.collaborators = '2, 3'
+    # job.is_finished = False
+    # session.add(job)
+    # session.commit()
+    # colonist = session.query(User).filter((User.age < 18))
+    # for i in colonist:
+    #     print(i.id, i.name, i.surname, i.age, 'years')
