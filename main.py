@@ -1,5 +1,7 @@
 import json
 
+import sqlalchemy
+
 from data import db_session
 
 from flask import Flask, url_for, request, render_template, redirect
@@ -310,8 +312,8 @@ def work():
 if __name__ == '__main__':
     # name_db = input()
     db_session.global_init(f'db/mars_explorer.db')
-    app.run(port=8080, host='127.0.0.1')
-    # session = db_session.create_session()
+    # app.run(port=8080, host='127.0.0.1')
+    session = db_session.create_session()
     # user = User()
     # user.surname = "Scott"
     # user.name = "Ridley"
@@ -364,6 +366,6 @@ if __name__ == '__main__':
     # job.is_finished = False
     # session.add(job)
     # session.commit()
-    # colonist = session.query(User).filter((User.age < 18))
-    # for i in colonist:
-    #     print(i.id, i.name, i.surname, i.age, 'years')
+    for i in session.query(User).filter(sqlalchemy.and_(User.age < 21), (User.address == 'module_1')):
+        i.address = 'module_3'
+        session.commit()
