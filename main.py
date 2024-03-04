@@ -1,13 +1,15 @@
 # github.com/Lazerny/learning-flask
 
 import json
+
+import flask
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 
 import sqlalchemy
 
-from data import db_session
+from data import db_session, jobs_api
 
-from flask import Flask, url_for, request, render_template, redirect
+from flask import Flask, url_for, request, render_template, redirect, make_response, jsonify
 
 from forms.Job import JobsForm
 from forms.user import RegisterForm
@@ -17,7 +19,11 @@ from data.jobs import Jobs
 from forms.user import LoginForm
 
 app = Flask(__name__)
-
+blueprint = flask.Blueprint(
+    'news_api',
+    __name__,
+    template_folder='templates'
+)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -380,9 +386,20 @@ def add_news():
                            form=form)
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
+
+
 if __name__ == '__main__':
     # name_db = input()
     db_session.global_init(f'db/mars_explorer.db')
+    app.register_blueprint(jobs_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
     # session = db_session.create_session()
     # user = User()
