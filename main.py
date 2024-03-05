@@ -1,22 +1,31 @@
 # github.com/Lazerny/learning-flask
 
 import json
+import os
 
 import flask
+
 from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 
 import sqlalchemy
+from werkzeug.utils import secure_filename
 
 from data import db_session, jobs_api
 
-from flask import Flask, url_for, request, render_template, redirect, make_response, jsonify
+from flask import Flask, url_for, request, render_template, redirect, make_response, jsonify, send_from_directory, abort
 
 from forms.Job import JobsForm
 from forms.user import RegisterForm
+from flask import Flask, url_for, request, render_template, redirect, flash
 
 from data.users import User
+from data.departments import Department
 from data.jobs import Jobs
 from forms.user import LoginForm
+
+UPLOAD_FOLDER = 'static/img'
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
 blueprint = flask.Blueprint(
@@ -25,6 +34,7 @@ blueprint = flask.Blueprint(
     template_folder='templates'
 )
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -33,6 +43,54 @@ login_manager.init_app(app)
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+def allowed_file(filename):
+    """ Функция проверки расширения файла """
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/uploads/<name>')
+def download_file(name):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+
+
+@app.route('/load_photo', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # проверим, передается ли в запросе файл
+        if 'file' not in request.files:
+            # После перенаправления на страницу загрузки
+            # покажем сообщение пользователю
+            flash('Не могу прочитать файл')
+            return redirect(request.url)
+        file = request.files['file']
+        # Если файл не выбран, то браузер может
+        # отправить пустой файл без имени.
+        if file.filename == '':
+            flash('Нет выбранного файла')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            # безопасно извлекаем оригинальное имя файла
+            filename = secure_filename(file.filename)
+            # сохраняем файл
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # если все прошло успешно, то перенаправляем
+            # на функцию-представление `download_file`
+            # для скачивания файла
+            return redirect(url_for('download_file', name=filename))
+    return '''
+    <!doctype html>
+    <h1>Загрузить новый файл</h1>
+    <h3>Для участия в миссии</h3>
+    <title>Загрузка фотографии</title>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    </html>
+    '''
 
 
 @app.route('/auto_answer')
@@ -382,8 +440,59 @@ def add_news():
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
-    return render_template('news.html', title='Добавление новости',
+    return render_template('jobs.html', title='Добавление работы',
                            form=form)
+
+
+@app.route('/news/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_news(id):
+    form = JobsForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          Jobs.team_leader == current_user.id
+                                          ).first()
+        if jobs:
+            form.job.data = jobs.job
+            form.work_size.data = jobs.work_size
+            form.coloborators.data = jobs.collaborators
+            form.is_finished.data = jobs.is_finished
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          Jobs.team_leader == current_user.id
+                                          ).first()
+        if jobs:
+            jobs.job = form.job.data
+            jobs.work_size = form.work_size.data
+            jobs.collaborators = form.coloborators.data
+            jobs.is_finished = form.is_finished.data
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('jobs.html',
+                           title='Редактирование работы',
+                           form=form
+                           )
+
+
+@app.route('/news_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def news_delete(id):
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).filter(Jobs.id == id,
+                                      Jobs.team_leader == current_user.id
+                                      ).first()
+    if jobs:
+        db_sess.delete(jobs)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/')
 
 
 @app.errorhandler(404)
@@ -402,50 +511,6 @@ if __name__ == '__main__':
     app.register_blueprint(jobs_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
     # session = db_session.create_session()
-    # user = User()
-    # user.surname = "Scott"
-    # user.name = "Ridley"
-    # user.age = 21
-    # user.position = "captain"
-    # user.speciality = "research engineer"
-    # user.address = "module_1"
-    # user.email = "scott_chief@mars.org"
-    # user.hashed_password = "cap"
-    # session.add(user)
-    #
-    # user = User()
-    # user.surname = "Robert"
-    # user.name = "Smith"
-    # user.age = 24
-    # user.position = "no captain"
-    # user.speciality = "engineer"
-    # user.address = "module_2"
-    # user.email = "robert_smith@mars.org"
-    # user.hashed_password = "123"
-    # session.add(user)
-    #
-    # user = User()
-    # user.surname = "Rebecca"
-    # user.name = "Smith"
-    # user.age = 23
-    # user.position = "no captain"
-    # user.speciality = "developer"
-    # user.address = "module_3"
-    # user.email = "rebecca_smith@mars.org"
-    # user.hashed_password = "qwe"
-    # session.add(user)
-    #
-    # user = User()
-    # user.surname = "North"
-    # user.name = "Harvat"
-    # user.age = 60
-    # user.position = "no captain"
-    # user.speciality = "developer"
-    # user.address = "module_5"
-    # user.email = "north_har@mars.org"
-    # user.hashed_password = "bfbdg"
-    # session.add(user)
-    #
     # job = Jobs()
     # job.team_leader = 1
     # job.job = 'deployment of residential modules 1 and 2'
@@ -457,3 +522,22 @@ if __name__ == '__main__':
     # for i in session.query(User).filter(sqlalchemy.and_(User.age < 21), (User.address == 'module_1')):
     #     i.address = 'module_3'
     #     session.commit()
+
+    # departament = Department()
+    # departament.title = 'team_1'
+    # departament.chief = 1
+    # departament.members = '1, 2, 3, 4'
+    # departament.email = 'departament1@mail.net'
+    # session.add(departament)
+    # session.commit()
+    # mans = []
+    # dep = session.query(Department).filter(Department.id == 1).first()
+    # for user in dep.members.split(', '):
+    #     time = 0
+    #     for job in session.query(Jobs).filter(Jobs.collaborators.like(f'%{user}%')):
+    #         time += job.work_size
+    #     if time > 25:
+    #         man = session.query(User).filter(User.id == user).first()
+    #         if man not in mans:
+    #             mans.append(man)
+    #             print(man.surname, man.name)

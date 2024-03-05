@@ -21,6 +21,16 @@
             <td>{{item.is_finished}}</td>
         </tr>
     </table>
+    {% if current_user.is_authenticated and current_user == item.user or current_user.id == 1 %}
+    <div>
+        <a href="/news/{{ item.id }}" class="btn btn-warning">
+            Изменить
+        </a>
+        <a href="/news_delete/{{ item.id }}" class="btn btn-danger">
+            Удалить
+        </a>
+    </div>
+{% endif %}
     <div>
         {{item.content}}
     </div>
