@@ -16,6 +16,7 @@ from flask import Flask, url_for, request, render_template, redirect, make_respo
 
 from forms.Job import JobsForm
 from forms.user import RegisterForm
+from forms.Department import DepartmentForm
 from flask import Flask, url_for, request, render_template, redirect, flash
 
 from data.users import User
@@ -375,8 +376,8 @@ def result_selection(nickname, level, rating):
 @app.route('/')
 def work():
     db_sess = db_session.create_session()
-    news = db_sess.query(Jobs).filter(Jobs.is_finished is not True)
-    return render_template("works.html", news=news)
+    jobs = db_sess.query(Jobs).filter(Jobs.is_finished is not True)
+    return render_template("works.html", jobs=jobs)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -427,7 +428,7 @@ def logout():
 
 @app.route('/add_jobs', methods=['GET', 'POST'])
 @login_required
-def add_news():
+def add_jobs():
     form = JobsForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -444,7 +445,7 @@ def add_news():
                            form=form)
 
 
-@app.route('/news/<int:id>', methods=['GET', 'POST'])
+@app.route('/jobs/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_news(id):
     form = JobsForm()
@@ -480,7 +481,7 @@ def edit_news(id):
                            )
 
 
-@app.route('/news_delete/<int:id>', methods=['GET', 'POST'])
+@app.route('/jobs_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def news_delete(id):
     db_sess = db_session.create_session()
@@ -493,6 +494,32 @@ def news_delete(id):
     else:
         abort(404)
     return redirect('/')
+
+
+@app.route('/departments')
+def departments():
+    session = db_session.create_session()
+    departments = session.query(Department)
+    return render_template("departments.html", departments=departments)
+
+
+@app.route("/departments/add", methods=['GET', 'POST'])
+@login_required
+def add_department():
+    form = DepartmentForm()
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        department = Department()
+        department.title = form.title.data
+        department.chief = current_user.id
+        department.members = form.members.data
+        department.email = form.email.data
+        current_user.department.append(department)
+        session.merge(current_user)
+        session.commit()
+        return redirect('/departments')
+    return render_template('add-department.html', title='Добавление отдела',
+                           form=form)
 
 
 @app.errorhandler(404)
