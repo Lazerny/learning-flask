@@ -24,13 +24,16 @@ from data.departments import Department
 from data.jobs import Jobs
 from forms.user import LoginForm
 
+from flask_restful import reqparse, abort, Api, Resource
+
 UPLOAD_FOLDER = 'static/img'
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
+api = Api(app)
 blueprint = flask.Blueprint(
-    'news_api',
+    'jobs_api',
     __name__,
     template_folder='templates'
 )
@@ -447,7 +450,7 @@ def add_jobs():
 
 @app.route('/jobs/<int:id>', methods=['GET', 'POST'])
 @login_required
-def edit_news(id):
+def edit_jobs(id):
     form = JobsForm()
     if request.method == "GET":
         db_sess = db_session.create_session()
@@ -483,7 +486,7 @@ def edit_news(id):
 
 @app.route('/jobs_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
-def news_delete(id):
+def jobs_delete(id):
     db_sess = db_session.create_session()
     jobs = db_sess.query(Jobs).filter(Jobs.id == id,
                                       Jobs.team_leader == current_user.id
@@ -503,6 +506,58 @@ def departments():
     return render_template("departments.html", departments=departments)
 
 
+@app.route("/departments/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit_departments(id):
+    form = DepartmentForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        department = db_sess.query(Department).filter(Department.id == id,
+                                                      Department.chief == current_user.id
+                                                      ).first()
+        if department:
+            form.title.data = department.title
+            current_user.id = department.chief
+            form.members.data = department.members
+            form.email.data = department.email
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        department = db_sess.query(Department).filter(Department.id == id,
+                                                      Department.chief == current_user.id
+                                                      ).first()
+        if department:
+
+            department.title = form.title.data
+            department.chief = current_user.id
+            department.members = form.members.data
+            department.email = form.email.data
+            db_sess.commit()
+            return redirect('/departments')
+        else:
+            abort(404)
+    return render_template('add-department.html',
+                           title='Редактирование отдела',
+                           form=form
+                           )
+
+
+@app.route('/departments_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def department_delete(id):
+    db_sess = db_session.create_session()
+    department = db_sess.query(Department).filter(Department.id == id,
+                                      Department.chief == current_user.id
+                                      ).first()
+    if department:
+        db_sess.delete(department)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/departments')
+
+
 @app.route("/departments/add", methods=['GET', 'POST'])
 @login_required
 def add_department():
@@ -510,10 +565,12 @@ def add_department():
     if form.validate_on_submit():
         session = db_session.create_session()
         department = Department()
+
         department.title = form.title.data
         department.chief = current_user.id
         department.members = form.members.data
         department.email = form.email.data
+
         current_user.department.append(department)
         session.merge(current_user)
         session.commit()
