@@ -37,10 +37,9 @@ print(get('http://localhost:8080/api/v2/jobs/44').json())
 print()
 print(post('http://localhost:8080/api/v2/jobs').json())
 print(post('http://localhost:8080/api/v2/jobs', json={'job': 'JOB!!'}).json())
-print(post('http://localhost:8080/api/v2/jobs', json={'job': 'JOB!!',
-                                                       'team_leader': 1,
-                                                       'work_size': 16,
-                                                       'collaborators': '1, 2, 3, 4',
-                                                       'start_date': 'start_date',
-                                                       'end_date': 'end_date',
-                                                       'is_finished': False}).json())
+print(post('http://localhost:8080/api/v2/jobs', json={
+                                                      'job': 'JOB!!',
+                                                      'team_leader': 1,
+                                                      'work_size': 16,
+                                                      'collaborators': '1, 2, 3, 4',
+                                                      'is_finished': False}).json())

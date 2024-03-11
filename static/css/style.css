@@ -25,5 +25,9 @@ tr{
     min-width: 200px;
 }
 td{
-    min-width: 200px;
+    min-width: 300px;
+}
+.container{
+    max-width: 1750px;
+    padding: 30px 60px;
 }

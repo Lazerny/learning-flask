@@ -23,7 +23,7 @@ from data.users import User
 from data.departments import Department
 from data.jobs import Jobs
 from forms.user import LoginForm
-
+from data.category import Category, association_table
 from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
@@ -331,6 +331,8 @@ def result_selection(nickname, level, rating):
 def work():
     db_sess = db_session.create_session()
     jobs = db_sess.query(Jobs).filter(Jobs.is_finished is not True)
+    for i in jobs:
+        print(i.team_leader)
     return render_template("works.html", jobs=jobs)
 
 

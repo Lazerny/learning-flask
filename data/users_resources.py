@@ -18,7 +18,6 @@ def set_password(password):
     return generate_password_hash(password)
 
 
-
 class UserResource(Resource):
     def get(self, user_id):
         abort_if_user_not_found(user_id)

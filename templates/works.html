@@ -16,6 +16,7 @@
             <th>Duration</th>
             <th>list of collaborators</th>
             <th>Is finished</th>
+            <th>Category</th>
         </tr>
         <tr>
             <td>{{item.job}}</td>
@@ -23,6 +24,7 @@
             <td>{{item.work_size}}</td>
             <td>{{item.collaborators}}</td>
             <td>{{item.is_finished}}</td>
+            <td>{{item.category}}</td>
         </tr>
     </table>
     {% if current_user.is_authenticated and current_user == item.user or current_user.id == 1 %}

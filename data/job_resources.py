@@ -14,18 +14,17 @@ def abort_if_job_not_found(job_id):
         abort(404, message=f"Job {job_id} not found")
 
 
-def set_password(password):
-    return generate_password_hash(password)
-
-
-
 class JobResource(Resource):
     def get(self, job_id):
         abort_if_job_not_found(job_id)
         session = db_session.create_session()
         job = session.query(Jobs).get(job_id)
         return jsonify({'job': job.to_dict(
-            only=('job', 'team_leader', 'work_size', 'collaborators', 'start_date', 'end_date', 'is_finished'))})
+            only=('job', 'team_leader', 'work_size', 'collaborators', 'start_date',
+                  'end_date', 'is_finished'))})
+
+    def put(self):
+        ...
 
     def delete(self, job_id):
         abort_if_job_not_found(job_id)
@@ -52,8 +51,6 @@ class JobListResource(Resource):
             team_leader=args['team_leader'],
             work_size=args['work_size'],
             collaborators=args['collaborators'],
-            start_date=args['start_date'],
-            end_date=args['end_date'],
             is_finished=args['is_finished']
         )
         session.add(job)
