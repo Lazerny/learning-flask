@@ -1,9 +1,9 @@
 from flask import jsonify
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import abort, Resource
 
 from data import db_session
 from data.users import User
-from data.parser import parser
+from data.parser import parser_user
 from werkzeug.security import generate_password_hash
 
 
@@ -45,7 +45,7 @@ class UserListResource(Resource):
             in user]})
 
     def post(self):
-        args = parser.parse_args()
+        args = parser_user.parse_args()
         session = db_session.create_session()
         user = User(
             name=args['name'],

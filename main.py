@@ -10,7 +10,7 @@ from flask_login import LoginManager, current_user, login_user, login_required, 
 import sqlalchemy
 from werkzeug.utils import secure_filename
 
-from data import db_session, jobs_api, users_resources
+from data import db_session, jobs_api, users_resources, job_resources
 
 from flask import Flask, url_for, request, render_template, redirect, make_response, jsonify, send_from_directory, abort
 
@@ -545,7 +545,9 @@ if __name__ == '__main__':
     db_session.global_init(f'db/mars_explorer.db')
     # app.register_blueprint(jobs_api.blueprint)
     api.add_resource(users_resources.UserListResource, '/api/v2/users')
+    api.add_resource(job_resources.JobListResource, '/api/v2/jobs')
     api.add_resource(users_resources.UserResource, '/api/v2/users/<int:user_id>')
+    api.add_resource(job_resources.JobResource, '/api/v2/jobs/<int:job_id>')
     app.run(port=8080, host='127.0.0.1')
 
     # session = db_session.create_session()
