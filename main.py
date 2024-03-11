@@ -10,7 +10,7 @@ from flask_login import LoginManager, current_user, login_user, login_required, 
 import sqlalchemy
 from werkzeug.utils import secure_filename
 
-from data import db_session, jobs_api
+from data import db_session, jobs_api, users_resources
 
 from flask import Flask, url_for, request, render_template, redirect, make_response, jsonify, send_from_directory, abort
 
@@ -26,10 +26,6 @@ from forms.user import LoginForm
 
 from flask_restful import reqparse, abort, Api, Resource
 
-UPLOAD_FOLDER = 'static/img'
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 app = Flask(__name__)
 api = Api(app)
 blueprint = flask.Blueprint(
@@ -38,7 +34,6 @@ blueprint = flask.Blueprint(
     template_folder='templates'
 )
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -48,53 +43,9 @@ def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
-
-def allowed_file(filename):
-    """ Функция проверки расширения файла """
-    return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 @app.route('/uploads/<name>')
 def download_file(name):
     return send_from_directory(app.config["UPLOAD_FOLDER"], name)
-
-
-@app.route('/load_photo', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        # проверим, передается ли в запросе файл
-        if 'file' not in request.files:
-            # После перенаправления на страницу загрузки
-            # покажем сообщение пользователю
-            flash('Не могу прочитать файл')
-            return redirect(request.url)
-        file = request.files['file']
-        # Если файл не выбран, то браузер может
-        # отправить пустой файл без имени.
-        if file.filename == '':
-            flash('Нет выбранного файла')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            # безопасно извлекаем оригинальное имя файла
-            filename = secure_filename(file.filename)
-            # сохраняем файл
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # если все прошло успешно, то перенаправляем
-            # на функцию-представление `download_file`
-            # для скачивания файла
-            return redirect(url_for('download_file', name=filename))
-    return '''
-    <!doctype html>
-    <h1>Загрузить новый файл</h1>
-    <h3>Для участия в миссии</h3>
-    <title>Загрузка фотографии</title>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    </html>
-    '''
 
 
 @app.route('/auto_answer')
@@ -592,8 +543,11 @@ def bad_request(_):
 if __name__ == '__main__':
     # name_db = input()
     db_session.global_init(f'db/mars_explorer.db')
-    app.register_blueprint(jobs_api.blueprint)
+    # app.register_blueprint(jobs_api.blueprint)
+    api.add_resource(users_resources.UserListResource, '/api/v2/users')
+    api.add_resource(users_resources.UserResource, '/api/v2/users/<int:user_id>')
     app.run(port=8080, host='127.0.0.1')
+
     # session = db_session.create_session()
     # job = Jobs()
     # job.team_leader = 1
