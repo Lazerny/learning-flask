@@ -543,7 +543,7 @@ def bad_request(_):
 if __name__ == '__main__':
     # name_db = input()
     db_session.global_init(f'db/mars_explorer.db')
-    # app.register_blueprint(jobs_api.blueprint)
+    app.register_blueprint(jobs_api.blueprint)
     api.add_resource(users_resources.UserListResource, '/api/v2/users')
     api.add_resource(job_resources.JobListResource, '/api/v2/jobs')
     api.add_resource(users_resources.UserResource, '/api/v2/users/<int:user_id>')
