@@ -11,7 +11,7 @@ blueprint = flask.Blueprint(
 
 
 @blueprint.route('/api/jobs', methods=['GET'])
-def get_news():
+def get_jobs():
     db_sess = db_session.create_session()
     jobs = db_sess.query(Jobs).all()
     return jsonify(
@@ -49,7 +49,37 @@ def create_jobs():
         team_leader=request.json['team_leader'],
         work_size=request.json['work_size'],
         collaborators=request.json['collaborators'])
-    print(Jobs)
     db_sess.add(jobs)
     db_sess.commit()
     return jsonify({'id': jobs.id})
+
+@blueprint.route('/api/jobs/delete/<int:jobs_id>', methods=['DELETE'])
+def delete_job(jobs_id):
+    db_sess = db_session.create_session()
+    jobs = db_sess.query(Jobs).get(jobs_id)
+    if not jobs:
+        return make_response(jsonify({'error': 'Not found'}, 404))
+    db_sess.delete(jobs)
+    db_sess.commit()
+    return jsonify(
+        {
+            'message': ['delete was successful']
+        }
+    )
+
+@blueprint.route('/api/jobs/edit/<int:jobs_id>', methods=['PUT'])
+def edit_jobs(jobs_id):
+    if not request.json:
+        return make_response(jsonify({'error': 'Empty request'}), 400)
+    db_sess = db_session.create_session()
+    job_to_edit = db_sess.query(Jobs).get(jobs_id)
+    if not job_to_edit:
+        return make_response(jsonify({'error': 'Not found'}), 404)
+    job_to_edit.job = job_to_edit.job if 'job' not in request.json else request.json['job']
+    job_to_edit.team_leader = job_to_edit.team_leader if 'team_leader' not in request.json else request.json['team_leader']
+    job_to_edit.work_size = job_to_edit.work_size if 'work_size' not in request.json else request.json['work_size']
+    job_to_edit.collaborators = job_to_edit.collaborators if 'collaborators' not in request.json else request.json['collaborators']
+    job_to_edit.is_finished = job_to_edit.is_finished if 'is_finished' not in request.json else request.json['is_finished']
+    db_sess.add(job_to_edit)
+    db_sess.commit()
+    return jsonify({'successful': 'OK'})
