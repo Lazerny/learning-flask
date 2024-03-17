@@ -28,11 +28,6 @@ from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
 api = Api(app)
-blueprint = flask.Blueprint(
-    'jobs_api',
-    __name__,
-    template_folder='templates'
-)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)

@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_restful import abort, Resource
 
 from data import db_session
@@ -23,8 +23,25 @@ class JobResource(Resource):
             only=('job', 'team_leader', 'work_size', 'collaborators', 'start_date',
                   'end_date', 'is_finished'))})
 
-    def put(self):
-        ...
+    def put(self, job_id):
+        abort_if_job_not_found(job_id)
+        # if not request.json:
+        #     return make_response(jsonify({'error': 'Empty request'}), 400)
+        db_sess = db_session.create_session()
+        job_to_edit = db_sess.query(Jobs).get(job_id)
+        # if not job_to_edit:
+        #     return make_response(jsonify({'error': 'Not found'}), 404)
+        job_to_edit.job = job_to_edit.job if 'job' not in request.json else request.json['job']
+        job_to_edit.team_leader = job_to_edit.team_leader if 'team_leader' not in request.json else request.json[
+            'team_leader']
+        job_to_edit.work_size = job_to_edit.work_size if 'work_size' not in request.json else request.json['work_size']
+        job_to_edit.collaborators = job_to_edit.collaborators if 'collaborators' not in request.json else request.json[
+            'collaborators']
+        job_to_edit.is_finished = job_to_edit.is_finished if 'is_finished' not in request.json else request.json[
+            'is_finished']
+        db_sess.add(job_to_edit)
+        db_sess.commit()
+        return jsonify({'successful': 'OK'})
 
     def delete(self, job_id):
         abort_if_job_not_found(job_id)

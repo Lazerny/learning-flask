@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_restful import abort, Resource
 
 from data import db_session
@@ -33,6 +33,33 @@ class UserResource(Resource):
         session.delete(user)
         session.commit()
         return jsonify({'success': 'OK'})
+
+    def put(self, user_id):
+        abort_if_user_not_found(user_id)
+        # if not request.json:
+        #     return make_response(jsonify({'error': 'Empty request'}), 400)
+        db_sess = db_session.create_session()
+        user_to_edit = db_sess.query(User).get(user_id)
+        # if not user_to_edit:
+        #     return make_response(jsonify({'error': 'Not found'}), 404)
+        user_to_edit.name = user_to_edit.name if 'name' not in request.json else request.json['name']
+        user_to_edit.surname = user_to_edit.surname if 'surname' not in request.json else request.json[
+            'surname']
+        user_to_edit.age = user_to_edit.age if 'age' not in request.json else request.json['age']
+        user_to_edit.position = user_to_edit.position if 'position' not in request.json else request.json[
+            'position']
+        user_to_edit.speciality = user_to_edit.speciality if 'speciality' not in request.json else request.json[
+            'speciality']
+        user_to_edit.address = user_to_edit.address if 'address' not in request.json else request.json[
+            'address']
+        user_to_edit.email = user_to_edit.email if 'email' not in request.json else request.json[
+            'email']
+        user_to_edit.hashed_password = user_to_edit.hashed_password if 'hashed_password' not in request.json else \
+        request.json[
+            'hashed_password']
+        db_sess.add(user_to_edit)
+        db_sess.commit()
+        return jsonify({'successful': 'OK'})
 
 
 class UserListResource(Resource):
